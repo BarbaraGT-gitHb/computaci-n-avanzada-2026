@@ -1,181 +1,23 @@
-# Campo de Datos 01 — v0.2
+# Atlas migratorio · Campo de Datos 01
 
-Starter para **Clase 03 — Computación Avanzada**  
-Magíster en Ciencias del Diseño · Universidad Adolfo Ibáñez
+Visualización 3D de la migración del charrán ártico (*Sterna paradisaea*) sobre un globo. El proyecto convierte datos de seguimiento animal en tres reglas visuales: una serie por ave, color para el sentido estacional y un marcador animado para el flujo.
 
-## Idea central
+## Preguntas resueltas por el sistema
 
-> **Los datos no tienen una forma visual predeterminada. Diseñar una representación significa decidir qué información conservar, cómo relacionarla y cómo hacerla visible.**
+- **¿Qué se mueve?** Nueve charranes árticos marcados en Alaska.
+- **¿Entre qué sectores?** Alaska, Pacífico Norte, Pacífico tropical/sur y océano Austral.
+- **¿Cómo se representa la trayectoria?** Cada línea es un corredor espacial generalizado de una serie de seguimiento; no es una posición en vivo.
+- **¿Cómo se reconoce el flujo?** Rojo: viaje hacia el sur. Azul: retorno al norte. Bandadas de siluetas recorren la línea en esa dirección.
+- **¿Cómo se hace visible la cantidad?** Una silueta equivale a 10 aves reales. Cada corredor lleva una bandada de 5 siluetas (50 aves) y las nueve rutas representan una muestra visual de 450 aves.
 
-Este starter representa el estado de un sistema real de bicicletas compartidas utilizando datos públicos en formato **GBFS**.
+## Datos y rigor
 
-La aplicación intenta consultar el feed en tiempo real de **Citi Bike (Nueva York)** y utiliza un dataset local de respaldo si la fuente no está disponible.
+La fuente es el estudio público **MCP Arctic Tern Alaska** del [Arctic Animal Movement Archive de Movebank](https://www.movebank.org/cms/movebank-content/arctic-animal-movement-archive): 9 individuos, 3.011 localizaciones y geolocalizadores solares, registrados entre 2017 y 2018. La fuente fue consultada en agosto de 2026.
 
-## Fuente
+La distancia anual de **70.900 km** (rango 59.500–81.600 km) corresponde al promedio publicado por BirdLife para charranes árticos seguidos en Islandia y Groenlandia; se exhibe como contexto de especie y no se atribuye a las nueve aves de Alaska. Ver [BirdLife DataZone](https://datazone.birdlife.org/articles/migrating-birds-know-no-boundaries).
 
-Citi Bike publica datos públicos de estado del sistema mediante GBFS.
+Las coordenadas de `main.js` están simplificadas deliberadamente: muestran corredores comparables de las nueve series, sin distribuir ni inventar las 3.011 observaciones puntuales. Esto evita que la visualización parezca un rastreo actual de animales.
 
-El starter utiliza:
+## Ejecución
 
-```text
-station_information
-```
-
-para:
-
-- nombre de la estación;
-- latitud;
-- longitud;
-- capacidad.
-
-Y:
-
-```text
-station_status
-```
-
-para:
-
-- bicicletas disponibles;
-- anclajes disponibles;
-- estado actual.
-
-## Arquitectura conceptual
-
-```text
-FUENTE
-GBFS
-
-↓
-
-FETCH
-
-↓
-
-JSON
-
-↓
-
-SELECCIONAR + COMBINAR
-
-↓
-
-REGLAS DE REPRESENTACIÓN
-
-↓
-
-GEOMETRÍA
-```
-
-## Reglas incluidas
-
-### 1 — Posición
-
-```text
-latitud + longitud → posición X/Z
-```
-
-La distribución conserva aproximadamente la relación espacial entre estaciones.
-
-### 2 — Altura total
-
-```text
-capacidad de la estación → altura total
-```
-
-El contenedor oscuro representa el tamaño del sistema disponible en esa estación.
-
-### 3 — Volumen lleno
-
-```text
-bicicletas disponibles / capacidad → volumen ocupado
-```
-
-La geometría clara muestra cuánta capacidad está actualmente ocupada por bicicletas.
-
-### 4 — Ancho
-
-```text
-porcentaje de ocupación → ancho
-```
-
-Una estación con mayor ocupación también aumenta ligeramente su presencia horizontal.
-
-## Dataset local de respaldo
-
-```text
-assets/data/movilidad-respaldo.json
-```
-
-contiene datos sintéticos de estaciones.
-
-Este archivo permite:
-
-- completar LAB03 sin depender de internet;
-- comprender primero la estructura de los datos;
-- comparar una fuente estática con una fuente viva.
-
-Los datos de respaldo **no representan estaciones reales**.
-
-## Cómo ejecutarlo
-
-Usa VS Code + Live Server.
-
-1. Abre la carpeta.
-2. Click derecho sobre `index.html`.
-3. `Open with Live Server`.
-4. Abre Developer Tools → Console si la escena no carga.
-
-## Archivos
-
-```text
-campo-de-datos-01-v0.2/
-├── index.html
-├── styles.css
-├── main.js
-├── README.md
-└── assets/
-    └── data/
-        └── movilidad-respaldo.json
-```
-
-## Qué mirar primero en `main.js`
-
-```text
-01 — CONFIGURACIÓN
-02 — ESCENA
-03 — DATOS: FETCH + FALLBACK
-04 — REGLAS: INPUT → RELACIÓN → OUTPUT
-05 — INTERFAZ + INSPECTOR
-06 — POLLING RESPONSABLE
-07 — ANIMACIÓN + RESPONSIVE
-```
-
-Para LAB03 el corazón conceptual está en:
-
-```js
-combinarFeedsGBFS()
-```
-
-y:
-
-```js
-crearModuloEstacion()
-```
-
-La primera convierte fuentes distintas en una estructura común.
-
-La segunda traduce esa información en geometría.
-
-## Experimento clave
-
-Selecciona una estación en la escena y lee sus datos:
-
-```text
-bicicletas
-anclajes libres
-capacidad
-ocupación
-```
-
-Luego identifica qué propiedad visual representa cada dato.
+Abrir `index.html` con Live Server. Se requiere conexión para cargar Three.js y el GeoJSON de contornos continentales.
