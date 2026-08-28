@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atlas migratorio · Charrán ártico</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="viewport-shell">
+      <header class="project-header">
+        <p class="eyebrow">COMPUTACIÓN AVANZADA · MCD UAI</p>
+        <h1>Atlas migratorio</h1>
+        <p class="subtitle">Nueve trayectorias de <i>Sterna paradisaea</i> conectan Alaska y el océano Austral.</p>
+      </header>
+      <div id="viewport" aria-label="Globo interactivo con trayectorias migratorias"></div>
+      <div class="legend"><span><i class="legend-line outbound"></i>Ida al sur</span><span><i class="legend-line return"></i>Retorno al norte</span><span><i class="legend-dot"></i>Posición animada</span></div>
+      <div class="hint">Arrastra para rotar · Rueda para acercar · Haz click en una ruta</div>
+    </section>
+    <aside class="controls-panel">
+      <div class="panel-header"><p class="eyebrow">FUENTE + REPRESENTACIÓN</p><h2>Charrán ártico</h2><p><i>Sterna paradisaea</i> · Alaska → Antártida</p></div>
+      <section class="status-card">
+        <div class="status-row"><span>Archivo de seguimiento</span><strong>Movebank · AAMA</strong></div><div class="status-row"><span>Estudio</span><strong>MCP Arctic Tern Alaska</strong></div><div class="status-row"><span>Periodo de la muestra</span><strong>2017–2018</strong></div><div class="status-row"><span>Consulta de fuente</span><strong id="actualizacion-label">—</strong></div>
+      </section>
+      <section class="summary-grid" aria-label="Resumen de datos">
+        <div><span>AVES MARCADAS</span><strong>9</strong><small>individuos</small></div><div><span>LOCALIZACIONES</span><strong>3.011</strong><small>registros</small></div><div><span>AVES REPRESENTADAS</span><strong id="aves-representadas">450</strong><small>muestra visual</small></div><div><span>EQUIVALENCIA</span><strong>1 = 10</strong><small>silueta / aves</small></div>
+      </section>
+      <section class="control-group"><h3>Lectura de la visualización</h3><label><span>Trayectorias visibles</span><output id="cantidad-valor">9</output><input id="cantidad" type="range" min="1" max="9" step="1" value="9" /></label><label><span>Velocidad del flujo</span><output id="velocidad-valor">1.0×</output><input id="velocidad" type="range" min="0.3" max="2" step="0.1" value="1" /></label></section>
+      <section class="mapping"><h3>Reglas de representación</h3><div class="map-row"><b>latitud + longitud</b><span>→</span><em>posición sobre esfera</em></div><div class="map-row"><b>serie de un ave marcada</b><span>→</span><em>una trayectoria</em></div><div class="map-row"><b>dirección estacional</b><span>→</span><em>color + bandadas</em></div><div class="map-row"><b>10 aves reales</b><span>→</span><em>1 silueta de ave</em></div></section>
+      <section class="inspector"><h3>Trayectoria seleccionada</h3><p id="ruta-nombre">Haz click sobre una línea para leer un corredor.</p><div class="metric-grid"><div><span>Dirección</span><strong id="m-direccion">—</strong></div><div><span>Individuo</span><strong id="m-individuo">—</strong></div><div><span>Origen</span><strong id="m-origen">—</strong></div><div><span>Destino</span><strong id="m-destino">—</strong></div></div></section>
+      <section class="note"><p>*Promedio anual documentado para charranes árticos de Islandia y Groenlandia; el archivo mostrado reúne 9 aves y 3.011 localizaciones de Alaska.</p><p>Cada bandada contiene 5 siluetas: 50 aves reales. Con las 9 rutas visibles se representan 450 aves como muestra de escala, no el total de la población mundial.</p><p>Las líneas son una generalización espacial de las series de seguimiento: permiten comparar corredores sin presentar interpolaciones como posiciones en vivo.</p><a href="https://www.movebank.org/cms/movebank-content/arctic-animal-movement-archive" target="_blank" rel="noreferrer">Ver archivo Movebank ↗</a></section>
+    </aside>
+  </main>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/" } }</script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
