@@ -1,4 +1,4 @@
-import * as THREE from "three";
+aimport * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 // Datos: Movebank / Arctic Animal Movement Archive, estudio "MCP Arctic Tern Alaska".
