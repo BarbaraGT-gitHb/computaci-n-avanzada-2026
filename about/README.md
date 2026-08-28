@@ -19,8 +19,6 @@
 
 ## Algo que me inspira
 
-Agrega una imagen local en `assets/images/` y cítala con Markdown, o agrega un link a un proyecto/referencia.
-
 ```md
 ```
 ![a](../assets/images/ref1.jpg)
