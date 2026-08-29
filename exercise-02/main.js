@@ -19,7 +19,7 @@ const rutasBase = [
   [[62,-165],[53,179],[34,166],[10,155],[-19,142],[-61,-47]],
 ];
 let cantidad = 9, velocidad = 1;
-let rutas = [], objetosInteractivos = [], tiempoAnterior = 0;
+let rutas = [], rutasAdicionales = [], objetosInteractivos = [], tiempoAnterior = 0;
 
 const viewport = document.querySelector("#viewport");
 const escena = new THREE.Scene();
@@ -44,18 +44,18 @@ function aEsfera(lat, lon, radio = R) {
 function curvaDePuntos(puntos, altura = .7) {
   return new THREE.CatmullRomCurve3(puntos.map(([lat, lon]) => aEsfera(lat, lon, R + altura)), false, "centripetal");
 }
-function crearSiluetaAve(escala, desplazamiento) {
+function crearSiluetaAve(escala, desplazamiento, color = 0xffffff) {
   const forma = new THREE.Shape();
   forma.moveTo(-1.05, 0); forma.quadraticCurveTo(-.55, .10, -.18, -.05);
   forma.quadraticCurveTo(0, -.28, .18, -.05); forma.quadraticCurveTo(.55, .10, 1.05, 0);
   forma.quadraticCurveTo(.52, .38, 0, .12); forma.quadraticCurveTo(-.52, .38, -1.05, 0);
-  const ave = new THREE.Mesh(new THREE.ShapeGeometry(forma), new THREE.MeshBasicMaterial({color:0xffffff, side:THREE.DoubleSide, transparent:true, opacity:.92}));
+  const ave = new THREE.Mesh(new THREE.ShapeGeometry(forma), new THREE.MeshBasicMaterial({color: color, side:THREE.DoubleSide, transparent:true, opacity:.92}));
   ave.scale.setScalar(escala); ave.position.copy(desplazamiento); return ave;
 }
-function crearBandada() {
+function crearBandada(color = 0xffffff) {
   const bandada = new THREE.Group();
   const distribucion = [[.16,0,0],[.11,.27,.10],[.12,-.22,.05],[.095,.42,-.04],[.085,-.39,-.08]];
-  distribucion.forEach(([escala,x,y],i) => bandada.add(crearSiluetaAve(escala,new THREE.Vector3(x,y,(i%2)*.04))));
+  distribucion.forEach(([escala,x,y],i) => bandada.add(crearSiluetaAve(escala,new THREE.Vector3(x,y,(i%2)*.04), color)));
   return bandada;
 }
 function crearRutas() {
@@ -71,6 +71,27 @@ function crearRutas() {
     const bandada = crearBandada(); grupo.add(ida,vuelta,bandada); grupoRutas.add(grupo);
     rutas.push({grupo,ida,vuelta,bandada,curvaSur,curvaNorte,progreso:(i/rutasBase.length)%1}); objetosInteractivos.push(ida,vuelta);
   });
+}
+async function cargarYCrearRutasMigracion() {
+  try {
+    const respuesta = await fetch('./migracion.json');
+    if (!respuesta.ok) throw new Error('No se pudo cargar migracion.json');
+    const datos = await respuesta.json();
+    const coordenadas = datos.results.slice(0, 20).map(r => [r.decimalLatitude, r.decimalLongitude]);
+    for (let i = 0; i < coordenadas.length; i += 4) {
+      const puntos = coordenadas.slice(i, i + 4);
+      if (puntos.length < 2) continue;
+      const curvaSur = curvaDePuntos(puntos, .55 + (i%3)*.06);
+      const curvaNorte = curvaDePuntos([...puntos].reverse(), .71 + (i%3)*.06);
+      const grupo = new THREE.Group();
+      const ida = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curvaSur.getPoints(120)), new THREE.LineBasicMaterial({color:0xffd700,transparent:true,opacity:.55}));
+      const vuelta = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curvaNorte.getPoints(120)), new THREE.LineBasicMaterial({color:0xffed4e,transparent:true,opacity:.40}));
+      ida.userData = {id:'M'+(Math.floor(i/4)+1),direccion:"Ruta de datos GBIF",origen:"Coordenadas de observación",destino:"Especie migradora"};
+      vuelta.userData = {id:'M'+(Math.floor(i/4)+1),direccion:"Retorno",origen:"Especie migradora",destino:"Coordenadas de observación"};
+      const bandada = crearBandada(0xffd700); grupo.add(ida,vuelta,bandada); grupoRutas.add(grupo);
+      rutasAdicionales.push({grupo,ida,vuelta,bandada,curvaSur,curvaNorte,progreso:(i/coordenadas.length)%1}); objetosInteractivos.push(ida,vuelta);
+    }
+  } catch(e) { console.warn("No se pudo cargar datos de migración:",e); }
 }
 function dibujarContornos(geojson) {
   const geometries = geojson.features.flatMap(f => f.geometry.type === "Polygon" ? f.geometry.coordinates : f.geometry.type === "MultiPolygon" ? f.geometry.coordinates.flat() : []);
@@ -161,7 +182,7 @@ renderer.domElement.addEventListener("pointerdown", e => { const rect=renderer.d
 function mostrarRuta(d) { document.querySelector("#ruta-nombre").textContent=`Corredor generalizado de la serie ${d.id} del archivo.`; document.querySelector("#m-direccion").textContent=d.direccion; document.querySelector("#m-individuo").textContent=`Ave ${d.id} de 9`; document.querySelector("#m-origen").textContent=d.origen; document.querySelector("#m-destino").textContent=d.destino; }
 document.querySelector("#cantidad").addEventListener("input",e=>{cantidad=+e.target.value;document.querySelector("#cantidad-valor").value=cantidad;document.querySelector("#aves-representadas").textContent=(cantidad*50).toLocaleString("es-CL");crearRutas();});
 document.querySelector("#velocidad").addEventListener("input",e=>{velocidad=+e.target.value;document.querySelector("#velocidad-valor").value=`${velocidad.toFixed(1)}×`;});
-function animar(t=0) { requestAnimationFrame(animar); const dt=Math.min(.05,(t-tiempoAnterior)/1000||0); tiempoAnterior=t; rutas.forEach((r,i)=>{r.progreso=(r.progreso+dt*.035*velocidad)%1; const curva=i%2?r.curvaNorte:r.curvaSur; const posicion=curva.getPointAt(r.progreso); r.bandada.position.copy(posicion); r.bandada.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),posicion.clone().normalize()); r.bandada.rotateZ(Math.sin(t*.003+i)*.16);}); controles.update(); renderer.render(escena,camara); }
+function animar(t=0) { requestAnimationFrame(animar); const dt=Math.min(.05,(t-tiempoAnterior)/1000||0); tiempoAnterior=t; rutas.forEach((r,i)=>{r.progreso=(r.progreso+dt*.035*velocidad)%1; const curva=i%2?r.curvaNorte:r.curvaSur; const posicion=curva.getPointAt(r.progreso); r.bandada.position.copy(posicion); r.bandada.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),posicion.clone().normalize()); r.bandada.rotateZ(Math.sin(t*.003+i)*.16);}); rutasAdicionales.forEach((r,i)=>{r.progreso=(r.progreso+dt*.035*velocidad)%1; const curva=i%2?r.curvaNorte:r.curvaSur; const posicion=curva.getPointAt(r.progreso); r.bandada.position.copy(posicion); r.bandada.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),posicion.clone().normalize()); r.bandada.rotateZ(Math.sin(t*.003+i)*.16);}); controles.update(); renderer.render(escena,camara); }
 function ajustar(){camara.aspect=viewport.clientWidth/viewport.clientHeight;camara.updateProjectionMatrix();renderer.setSize(viewport.clientWidth,viewport.clientHeight);} window.addEventListener("resize",ajustar);
 document.querySelector("#actualizacion-label").textContent=new Intl.DateTimeFormat("es-CL",{dateStyle:"medium"}).format(new Date());
-crearRutas(); crearMarcadoresSector(); cargarContornos(); animar();
+crearRutas(); crearMarcadoresSector(); cargarContornos(); cargarYCrearRutasMigracion(); animar();
