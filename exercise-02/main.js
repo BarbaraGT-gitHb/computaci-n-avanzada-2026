@@ -52,25 +52,10 @@ function crearSiluetaAve(escala, desplazamiento, color = 0xffffff) {
   const ave = new THREE.Mesh(new THREE.ShapeGeometry(forma), new THREE.MeshBasicMaterial({color: color, side:THREE.DoubleSide, transparent:true, opacity:.92}));
   ave.scale.setScalar(escala); ave.position.copy(desplazamiento); return ave;
 }
-function crearSiluetaAveGBIF(escala, desplazamiento) {
-  const forma = new THREE.Shape();
-  // Silueta diferente: triangular puntiaguda
-  forma.moveTo(-0.8, -0.3); forma.lineTo(0, 0.5); forma.lineTo(0.8, -0.3);
-  forma.lineTo(0.3, -0.1); forma.lineTo(0, -0.4); forma.lineTo(-0.3, -0.1);
-  forma.closePath();
-  const ave = new THREE.Mesh(new THREE.ShapeGeometry(forma), new THREE.MeshBasicMaterial({color: 0x000000, side:THREE.DoubleSide, transparent:true, opacity:.92}));
-  ave.scale.setScalar(escala); ave.position.copy(desplazamiento); return ave;
-}
 function crearBandada(color = 0xffffff) {
   const bandada = new THREE.Group();
   const distribucion = [[.16,0,0],[.11,.27,.10],[.12,-.22,.05],[.095,.42,-.04],[.085,-.39,-.08]];
   distribucion.forEach(([escala,x,y],i) => bandada.add(crearSiluetaAve(escala,new THREE.Vector3(x,y,(i%2)*.04), color)));
-  return bandada;
-}
-function crearBandadaGBIF() {
-  const bandada = new THREE.Group();
-  const distribucion = [[.16,0,0],[.11,.27,.10],[.12,-.22,.05],[.095,.42,-.04],[.085,-.39,-.08]];
-  distribucion.forEach(([escala,x,y],i) => bandada.add(crearSiluetaAveGBIF(escala,new THREE.Vector3(x,y,(i%2)*.04))));
   return bandada;
 }
 function crearRutas() {
@@ -103,7 +88,7 @@ async function cargarYCrearRutasMigracion() {
       const vuelta = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curvaNorte.getPoints(120)), new THREE.LineBasicMaterial({color:0xffed4e,transparent:true,opacity:.40}));
       ida.userData = {id:'M'+(Math.floor(i/4)+1),direccion:"Ruta de datos GBIF",origen:"Coordenadas de observación",destino:"Especie migradora"};
       vuelta.userData = {id:'M'+(Math.floor(i/4)+1),direccion:"Retorno",origen:"Especie migradora",destino:"Coordenadas de observación"};
-      const bandada = crearBandadaGBIF(); grupo.add(ida,vuelta,bandada); grupoRutas.add(grupo);
+      const bandada = crearBandada(0x000000); grupo.add(ida,vuelta,bandada); grupoRutas.add(grupo);
       rutasAdicionales.push({grupo,ida,vuelta,bandada,curvaSur,curvaNorte,progreso:(i/coordenadas.length)%1}); objetosInteractivos.push(ida,vuelta);
     }
   } catch(e) { console.warn("No se pudo cargar datos de migración:",e); }
